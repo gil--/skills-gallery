@@ -15,7 +15,9 @@
       "settings": {
         "heading": "Sidekick Skills Gallery",
         "subheading": "Browse and install reusable prompts for Shopify Sidekick",
-        "source": [],
+        "source": [
+          "weekly-sales"
+        ],
         "categories_source": [],
         "show_submit_cta": true,
         "columns": 3,
