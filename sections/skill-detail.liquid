@@ -127,7 +127,7 @@
     <div class="skill-detail__related">
       <h2 class="skill-detail__related-title">Related Skills</h2>
       <div class="skill-detail__related-grid">
-        {%- for related_skill in related_skills.values limit: 6 -%}
+        {%- for related_skill in related_skills limit: 6 -%}
           {%- render 'skill-card', skill: related_skill -%}
         {%- endfor -%}
       </div>

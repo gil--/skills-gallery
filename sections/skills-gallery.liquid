@@ -42,7 +42,7 @@
       >
         All
       </button>
-      {%- for cat in categories_source.values -%}
+      {%- for cat in categories_source -%}
         {% liquid
           assign cat_name = cat.name.value | default: cat.system.handle
           assign cat_emoji = cat.emoji.value | default: ''
@@ -77,7 +77,7 @@
   >
     {%- if skills_list != blank -%}
       {%- comment -%} Featured skills first {%- endcomment -%}
-      {%- for skill in skills_list.values -%}
+      {%- for skill in skills_list -%}
         {%- liquid
           assign is_featured = skill.featured.value | default: false
         -%}
@@ -87,7 +87,7 @@
       {%- endfor -%}
 
       {%- comment -%} Non-featured skills {%- endcomment -%}
-      {%- for skill in skills_list.values -%}
+      {%- for skill in skills_list -%}
         {%- liquid
           assign is_featured = skill.featured.value | default: false
         -%}
