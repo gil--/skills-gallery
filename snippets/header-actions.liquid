@@ -1,56 +1,6 @@
 <header-actions
   {{- block.shopify_attributes -}}
 >
-  {% if shop.customer_accounts_enabled %}
-    <script
-      src="{{ 'dialog.js' | asset_url }}"
-      type="module"
-    ></script>
-
-    <anchored-popover-component
-      data-close-on-resize="true"
-      class="account-popover mobile:hidden"
-    >
-      {% render 'account-button' with 'account-popover' as popover_id %}
-      <div
-        class="account-popover__panel details-content color-{{ settings.popover_color_scheme }}"
-        id="account-popover"
-        popover="auto"
-        ref="popover"
-      >
-        {% render 'account-actions' %}
-      </div>
-    </anchored-popover-component>
-
-    <dialog-component
-      class="account-drawer"
-      {{ block.shopify_attributes }}
-    >
-      {% render 'account-button', attributes: 'on:click="/showDialog"' %}
-      <dialog
-        ref="dialog"
-        class="color-{{ settings.popover_color_scheme }} dialog-modal dialog-drawer account-drawer__dialog"
-        scroll-lock
-        aria-labelledby="account-drawer-heading"
-      >
-        <button
-          ref="closeButton"
-          on:click="/closeDialog"
-          class="button button-unstyled close-button account-drawer__close-button"
-          aria-label="{{ 'actions.close_dialog' | t }}"
-          autofocus
-        >
-          <span
-            class="svg-wrapper"
-            aria-hidden="true"
-          >
-            {{- 'icon-close.svg' | inline_asset_content -}}
-          </span>
-        </button>
-        {% render 'account-actions' %}
-      </dialog>
-    </dialog-component>
-  {% endif %}
 </header-actions>
 
 {% stylesheet %}
