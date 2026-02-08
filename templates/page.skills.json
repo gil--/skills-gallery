@@ -1,0 +1,23 @@
+{
+  "sections": {
+    "main": {
+      "type": "skills-gallery",
+      "settings": {
+        "heading": "Sidekick Skills Gallery",
+        "subheading": "Browse and install reusable prompts for Shopify Sidekick",
+        "columns": 3,
+        "columns_gap": 16,
+        "rows_gap": 16,
+        "show_submit_cta": true,
+        "section_width": "page-width",
+        "gap": 24,
+        "color_scheme": "scheme-1",
+        "padding-block-start": 48,
+        "padding-block-end": 48
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

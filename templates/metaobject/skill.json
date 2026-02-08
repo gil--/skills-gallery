@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "main": {
+      "type": "skill-detail",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding-block-start": 32,
+        "padding-block-end": 48
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

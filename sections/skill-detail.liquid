@@ -1,0 +1,395 @@
+{% liquid
+  assign skill = metaobject
+  assign command = skill.command.value | default: ''
+  assign name = skill.name.value | default: 'Untitled Skill'
+  assign tagline = skill.tagline.value | default: ''
+  assign creator = skill.creator.value | default: ''
+  assign creator_url = skill.creator_url.value | default: ''
+  assign prompt = skill.steps.value | default: ''
+  assign skill_image = skill.image.value
+  assign categories_raw = skill.categories.value | default: ''
+  assign categories = categories_raw | split: ','
+  assign related_skills = skill.related_skills.value
+
+  assign sk_s = command | remove_first: '/' | strip | truncate: 40, ''
+  assign sk_p = prompt | url_encode
+  assign install_url = 'https://admin.shopify.com/sidekick?sk_s=' | append: sk_s | append: '&sk_p=' | append: sk_p
+%}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+
+<div
+  class="
+    section
+    section--page-width
+    color-{{ section.settings.color_scheme }}
+    skill-detail
+    spacing-style
+    gap-style
+  "
+  style="
+    {%- render 'spacing-style', settings: section.settings -%}
+    {%- render 'gap-style', value: 32 -%}
+  "
+>
+  <a href="/pages/skills" class="skill-detail__back">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Back to Gallery
+  </a>
+
+  <div class="skill-detail__layout">
+    <div class="skill-detail__main">
+      {%- if skill_image -%}
+        <div class="skill-detail__image">
+          {{ skill_image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '600,900,1200' }}
+        </div>
+      {%- endif -%}
+
+      <div class="skill-detail__header">
+        {%- if command != blank -%}
+          <span class="skill-detail__command">{{ command }}</span>
+        {%- endif -%}
+
+        <h1 class="skill-detail__name">{{ name }}</h1>
+
+        {%- if tagline != blank -%}
+          <p class="skill-detail__tagline">{{ tagline }}</p>
+        {%- endif -%}
+      </div>
+
+      <div class="skill-detail__actions">
+        <a href="{{ install_url }}" class="button" target="_blank" rel="noopener noreferrer">
+          Add to Sidekick
+        </a>
+        <button
+          type="button"
+          class="button-secondary skill-detail__copy-link-btn"
+          onclick="navigator.clipboard.writeText('{{ install_url }}').then(function() { var btn = event.currentTarget; btn.textContent = 'Copied!'; setTimeout(function() { btn.textContent = 'Copy install link'; }, 2000); });"
+        >
+          Copy install link
+        </button>
+      </div>
+
+      {%- if creator != blank -%}
+        <div class="skill-detail__creator">
+          <span class="skill-detail__creator-label">Created by</span>
+          {%- if creator_url != blank -%}
+            <a href="{{ creator_url }}" class="skill-detail__creator-name" target="_blank" rel="noopener noreferrer">{{ creator }}</a>
+          {%- else -%}
+            <span class="skill-detail__creator-name">{{ creator }}</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if categories_raw != blank -%}
+        <div class="skill-detail__categories">
+          {%- for cat in categories -%}
+            {%- assign cat_stripped = cat | strip -%}
+            {%- if cat_stripped != blank -%}
+              <span class="skill-detail__tag">{{ cat_stripped }}</span>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+      {%- if prompt != blank -%}
+        <div class="skill-detail__prompt-section">
+          <div class="skill-detail__prompt-header">
+            <h2 class="skill-detail__prompt-title">Prompt</h2>
+            <button
+              type="button"
+              class="skill-detail__copy-btn"
+              onclick="navigator.clipboard.writeText(document.getElementById('skill-prompt-{{ skill.system.handle }}').textContent).then(function() { var btn = event.currentTarget; btn.textContent = 'Copied!'; setTimeout(function() { btn.textContent = 'Copy prompt'; }, 2000); });"
+            >
+              Copy prompt
+            </button>
+          </div>
+          <pre class="skill-detail__prompt-code"><code id="skill-prompt-{{ skill.system.handle }}">{{ prompt | escape }}</code></pre>
+        </div>
+      {%- endif -%}
+
+      <div class="skill-detail__share">
+        <h3 class="skill-detail__share-title">Share this skill</h3>
+        <button
+          type="button"
+          class="button-secondary"
+          onclick="navigator.clipboard.writeText(window.location.href).then(function() { var btn = event.currentTarget; btn.textContent = 'Copied!'; setTimeout(function() { btn.textContent = 'Copy page link'; }, 2000); });"
+        >
+          Copy page link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {%- if related_skills != blank -%}
+    <div class="skill-detail__related">
+      <h2 class="skill-detail__related-title">Related Skills</h2>
+      <div class="skill-detail__related-grid">
+        {%- for related_skill in related_skills.values limit: 6 -%}
+          {%- render 'skill-card', skill: related_skill -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .skill-detail__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-foreground-muted, var(--color-foreground));
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color var(--animation-speed) var(--animation-easing);
+  }
+
+  .skill-detail__back:hover {
+    color: var(--color-primary);
+  }
+
+  .skill-detail__layout {
+    max-width: 760px;
+  }
+
+  .skill-detail__main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .skill-detail__image {
+    border-radius: var(--style-border-radius-cards, 8px);
+    overflow: hidden;
+  }
+
+  .skill-detail__image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  .skill-detail__header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .skill-detail__command {
+    display: inline-block;
+    width: fit-content;
+    font-family: monospace;
+    font-size: 0.875rem;
+    line-height: 1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5-15));
+    color: var(--color-foreground);
+  }
+
+  .skill-detail__name {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1.2;
+    color: var(--color-foreground-heading);
+  }
+
+  .skill-detail__tagline {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: var(--color-foreground-muted, var(--color-foreground));
+  }
+
+  .skill-detail__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .skill-detail__creator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+
+  .skill-detail__creator-label {
+    color: var(--color-foreground-muted, var(--color-foreground));
+  }
+
+  .skill-detail__creator-name {
+    font-weight: 500;
+    color: var(--color-foreground);
+    text-decoration: none;
+  }
+
+  a.skill-detail__creator-name:hover {
+    color: var(--color-primary);
+  }
+
+  .skill-detail__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .skill-detail__tag {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgb(var(--color-primary-rgb) / 0.08);
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .skill-detail__prompt-section {
+    border: 1px solid var(--color-border);
+    border-radius: var(--style-border-radius-cards, 8px);
+    overflow: hidden;
+  }
+
+  .skill-detail__prompt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5-15));
+  }
+
+  .skill-detail__prompt-title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-foreground-heading);
+  }
+
+  .skill-detail__copy-btn {
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-foreground);
+    cursor: pointer;
+    transition: background var(--animation-speed) var(--animation-easing);
+  }
+
+  .skill-detail__copy-btn:hover {
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5-15));
+  }
+
+  .skill-detail__prompt-code {
+    margin: 0;
+    padding: 16px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--color-foreground);
+    background: transparent;
+  }
+
+  .skill-detail__prompt-code code {
+    font-family: monospace;
+  }
+
+  .skill-detail__share {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .skill-detail__share-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-foreground-heading);
+  }
+
+  .skill-detail__related {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .skill-detail__related-title {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--color-foreground-heading);
+  }
+
+  .skill-detail__related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  @media (max-width: 989px) {
+    .skill-detail__related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 549px) {
+    .skill-detail__name {
+      font-size: 1.5rem;
+    }
+
+    .skill-detail__related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Skill Detail",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    }
+  ]
+}
+{% endschema %}

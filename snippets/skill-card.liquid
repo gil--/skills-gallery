@@ -1,0 +1,224 @@
+{%- doc -%}
+  Renders a skill card for the Sidekick Skills Gallery.
+
+  @param {object} skill - A metaobject entry of type `skill`
+  @param {boolean} [featured] - Whether this skill is featured (larger card)
+
+  @example
+  {% render 'skill-card', skill: skill %}
+{%- enddoc -%}
+
+{% liquid
+  assign command = skill.command.value | default: ''
+  assign name = skill.name.value | default: 'Untitled Skill'
+  assign tagline = skill.tagline.value | default: ''
+  assign creator = skill.creator.value | default: ''
+  assign creator_url = skill.creator_url.value | default: ''
+  assign prompt = skill.steps.value | default: ''
+  assign skill_image = skill.image.value
+
+  assign categories_raw = skill.categories.value | default: ''
+  assign categories = categories_raw | split: ','
+
+  assign sk_s = command | remove_first: '/' | strip | truncate: 40, ''
+  assign sk_p = prompt | url_encode
+  assign install_url = 'https://admin.shopify.com/sidekick?sk_s=' | append: sk_s | append: '&sk_p=' | append: sk_p
+%}
+
+<div
+  class="skill-card{% if featured %} skill-card--featured{% endif %}"
+  data-categories="{{ categories_raw | strip | downcase }}"
+>
+  <a href="{{ skill.system.url }}" class="skill-card__link">
+    <span class="visually-hidden">{{ name }}</span>
+  </a>
+
+  <div class="skill-card__body">
+    {% if skill_image %}
+      <div class="skill-card__image">
+        {{ skill_image | image_url: width: 600 | image_tag: loading: 'lazy', widths: '300,600' }}
+      </div>
+    {% endif %}
+
+    {% if command != blank %}
+      <span class="skill-card__command">{{ command }}</span>
+    {% endif %}
+
+    <h3 class="skill-card__name">{{ name }}</h3>
+
+    {% if tagline != blank %}
+      <p class="skill-card__tagline">{{ tagline }}</p>
+    {% endif %}
+  </div>
+
+  <div class="skill-card__footer">
+    <div class="skill-card__meta">
+      {% if creator != blank %}
+        <span class="skill-card__creator">{{ creator }}</span>
+      {% endif %}
+      {% if categories_raw != blank %}
+        {% for cat in categories %}
+          {% assign cat_stripped = cat | strip %}
+          {% if cat_stripped != blank %}
+            <span class="skill-card__tag">{{ cat_stripped }}</span>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    <a
+      href="{{ install_url }}"
+      class="skill-card__add-btn"
+      title="Add to Sidekick"
+      onclick="event.stopPropagation();"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      Add
+    </a>
+  </div>
+</div>
+
+{% stylesheet %}
+  .skill-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--style-border-radius-cards, 8px);
+    overflow: hidden;
+    transition: box-shadow var(--animation-speed) var(--animation-easing),
+                transform var(--animation-speed) var(--animation-easing);
+  }
+
+  .skill-card:hover {
+    box-shadow: 0 4px 16px rgb(var(--color-shadow-rgb) / 0.12);
+    transform: translateY(-2px);
+  }
+
+  .skill-card__link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .skill-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 20px 12px;
+    flex: 1;
+  }
+
+  .skill-card__image {
+    border-radius: 4px;
+    overflow: hidden;
+    margin-block-end: 4px;
+  }
+
+  .skill-card__image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  .skill-card__command {
+    display: inline-block;
+    width: fit-content;
+    font-family: monospace;
+    font-size: 0.75rem;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5-15));
+    color: var(--color-foreground);
+  }
+
+  .skill-card__name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0;
+    color: var(--color-foreground-heading);
+  }
+
+  .skill-card__tagline {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-foreground-muted, var(--color-foreground));
+    margin: 0;
+  }
+
+  .skill-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px 16px;
+    border-top: 1px solid rgb(var(--color-border-rgb) / 0.5);
+  }
+
+  .skill-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    font-size: 0.75rem;
+    min-width: 0;
+  }
+
+  .skill-card__creator {
+    color: var(--color-foreground-muted, var(--color-foreground));
+  }
+
+  .skill-card__tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgb(var(--color-primary-rgb) / 0.08);
+    color: var(--color-primary);
+    font-size: 0.7rem;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .skill-card__add-btn {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: var(--style-border-radius-buttons-secondary, 6px);
+    border: 1px solid var(--color-secondary-button-border);
+    background: var(--color-secondary-button-background);
+    color: var(--color-secondary-button-text);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--animation-speed) var(--animation-easing),
+                color var(--animation-speed) var(--animation-easing);
+  }
+
+  .skill-card__add-btn:hover {
+    background: var(--color-secondary-button-hover-background);
+    color: var(--color-secondary-button-hover-text);
+    border-color: var(--color-secondary-button-hover-border);
+  }
+
+  .skill-card--featured {
+    grid-column: span 2;
+  }
+
+  @media (max-width: 749px) {
+    .skill-card--featured {
+      grid-column: span 1;
+    }
+  }
+{% endstylesheet %}

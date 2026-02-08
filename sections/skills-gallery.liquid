@@ -1,0 +1,400 @@
+{% liquid
+  assign skills_list = section.settings.source
+  assign categories_source = section.settings.categories_source
+%}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+
+<div
+  class="
+    section
+    section--{{ section.settings.section_width }}
+    color-{{ section.settings.color_scheme }}
+    skills-gallery
+    spacing-style
+    gap-style
+  "
+  style="
+    {%- render 'spacing-style', settings: section.settings -%}
+    {%- render 'gap-style', value: section.settings.gap -%}
+  "
+>
+  {%- if section.settings.heading != blank or section.settings.subheading != blank -%}
+    <div class="skills-gallery__header">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="skills-gallery__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="skills-gallery__subheading">{{ section.settings.subheading }}</p>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Category filter tabs {%- endcomment -%}
+  {%- if categories_source != blank -%}
+    <div class="skills-gallery__filters" role="tablist" aria-label="Filter skills by category">
+      <button
+        class="skills-gallery__filter-tab skills-gallery__filter-tab--active"
+        role="tab"
+        aria-selected="true"
+        data-category="all"
+        type="button"
+      >
+        All
+      </button>
+      {%- for cat in categories_source.values -%}
+        {% liquid
+          assign cat_name = cat.name.value | default: cat.system.handle
+          assign cat_emoji = cat.emoji.value | default: ''
+          assign cat_sort = cat.sort_order.value | default: 0
+        %}
+        <button
+          class="skills-gallery__filter-tab"
+          role="tab"
+          aria-selected="false"
+          data-category="{{ cat_name | downcase | strip }}"
+          data-sort="{{ cat_sort }}"
+          type="button"
+        >
+          {%- if cat_emoji != blank -%}
+            <span class="skills-gallery__filter-emoji" aria-hidden="true">{{ cat_emoji }}</span>
+          {%- endif -%}
+          {{ cat_name }}
+        </button>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Skills grid {%- endcomment -%}
+  <div
+    class="skills-gallery__grid"
+    role="tabpanel"
+    style="
+      --grid-columns: {{ section.settings.columns }};
+      --grid-columns-gap: {{ section.settings.columns_gap }}px;
+      --grid-rows-gap: {{ section.settings.rows_gap }}px;
+    "
+  >
+    {%- if skills_list != blank -%}
+      {%- comment -%} Featured skills first {%- endcomment -%}
+      {%- for skill in skills_list.values -%}
+        {%- liquid
+          assign is_featured = skill.featured.value | default: false
+        -%}
+        {%- if is_featured == true -%}
+          {%- render 'skill-card', skill: skill, featured: true -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- comment -%} Non-featured skills {%- endcomment -%}
+      {%- for skill in skills_list.values -%}
+        {%- liquid
+          assign is_featured = skill.featured.value | default: false
+        -%}
+        {%- if is_featured != true -%}
+          {%- render 'skill-card', skill: skill -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- else -%}
+      <p class="skills-gallery__empty">No skills found. Add skill metaobject entries and connect them in the section settings.</p>
+    {%- endif -%}
+  </div>
+
+  {%- if section.settings.show_submit_cta -%}
+    <div class="skills-gallery__cta">
+      <a href="/pages/submit-skill" class="button-secondary">Submit a Skill</a>
+    </div>
+  {%- endif -%}
+</div>
+
+<script>
+  (function() {
+    const section = document.querySelector('.skills-gallery');
+    if (!section) return;
+
+    const tabs = section.querySelectorAll('.skills-gallery__filter-tab');
+    const cards = section.querySelectorAll('.skill-card');
+
+    if (!tabs.length || !cards.length) return;
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        tabs.forEach(function(t) {
+          t.classList.remove('skills-gallery__filter-tab--active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('skills-gallery__filter-tab--active');
+        tab.setAttribute('aria-selected', 'true');
+
+        var category = tab.getAttribute('data-category');
+
+        cards.forEach(function(card) {
+          if (category === 'all') {
+            card.style.display = '';
+            return;
+          }
+          var cardCategories = (card.getAttribute('data-categories') || '').toLowerCase();
+          if (cardCategories.indexOf(category) !== -1) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .skills-gallery__header {
+    text-align: center;
+  }
+
+  .skills-gallery__heading {
+    margin: 0;
+    color: var(--color-foreground-heading);
+  }
+
+  .skills-gallery__subheading {
+    margin: 8px 0 0;
+    color: var(--color-foreground-muted, var(--color-foreground));
+    font-size: 1.05rem;
+    line-height: 1.5;
+  }
+
+  .skills-gallery__filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-block: 4px;
+  }
+
+  .skills-gallery__filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .skills-gallery__filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-foreground);
+    cursor: pointer;
+    transition: background var(--animation-speed) var(--animation-easing),
+                color var(--animation-speed) var(--animation-easing),
+                border-color var(--animation-speed) var(--animation-easing);
+  }
+
+  .skills-gallery__filter-tab:hover {
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5-15));
+  }
+
+  .skills-gallery__filter-tab--active {
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border-color: var(--color-foreground);
+  }
+
+  .skills-gallery__filter-tab--active:hover {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  .skills-gallery__filter-emoji {
+    font-size: 1.1em;
+  }
+
+  .skills-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns, 3), 1fr);
+    gap: var(--grid-rows-gap, 16px) var(--grid-columns-gap, 16px);
+  }
+
+  @media (max-width: 989px) {
+    .skills-gallery__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 549px) {
+    .skills-gallery__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .skills-gallery__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--color-foreground-muted, var(--color-foreground));
+  }
+
+  .skills-gallery__cta {
+    text-align: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Skills Gallery",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Sidekick Skills Gallery"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Browse and install reusable prompts for Shopify Sidekick"
+    },
+    {
+      "type": "header",
+      "content": "Data sources"
+    },
+    {
+      "type": "metaobject_list",
+      "id": "source",
+      "label": "Skills",
+      "metaobject_type": "skill"
+    },
+    {
+      "type": "metaobject_list",
+      "id": "categories_source",
+      "label": "Categories",
+      "metaobject_type": "skill_category"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_submit_cta",
+      "label": "Show 'Submit a Skill' button",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Grid layout"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "columns_gap",
+      "label": "Horizontal gap",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "rows_gap",
+      "label": "Vertical gap",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "t:content.section_layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Skills Gallery",
+      "category": "t:categories.custom",
+      "settings": {
+        "heading": "Sidekick Skills Gallery",
+        "subheading": "Browse and install reusable prompts for Shopify Sidekick",
+        "columns": 3,
+        "columns_gap": 16,
+        "rows_gap": 16,
+        "show_submit_cta": true,
+        "section_width": "page-width",
+        "gap": 24,
+        "padding-block-start": 48,
+        "padding-block-end": 48
+      }
+    }
+  ]
+}
+{% endschema %}
